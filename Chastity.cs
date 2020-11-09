@@ -51,7 +51,7 @@ namespace DarkBot_Chastity
                     {
                         foreach (KeyValuePair<ulong, UserInfo> kvp in database)
                         {
-                            if (currentTime > kvp.Value.releaseTime)
+                            if (kvp.Value.releaseTime > 0 && currentTime > kvp.Value.releaseTime)
                             {
                                 removeValue = kvp.Value;
                                 break;
