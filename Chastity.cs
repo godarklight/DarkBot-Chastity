@@ -68,11 +68,13 @@ namespace DarkBot_Chastity
                         SocketGuild sg = _client.GetGuild(removeValue.serverID);
                         if (sg == null)
                         {
+                            Log(LogSeverity.Debug, "Heartbeat SocketGuild is null");
                             continue;
                         }
                         SocketGuildUser sgu = sg.GetUser(removeValue.userID);
-                        if (sg == null)
+                        if (sgu == null)
                         {
+                            Log(LogSeverity.Debug, "Heartbeat SocketGuildUser is null");
                             continue;
                         }
                         FreeUser(sg, sgu);
@@ -84,6 +86,7 @@ namespace DarkBot_Chastity
 
         private async void FreeUser(SocketGuild sg, SocketGuildUser sgu)
         {
+            Log(LogSeverity.Debug, "FreeUser enter lock");
             lock (database)
             {
                 if (database.ContainsKey(sgu.Id))
@@ -92,8 +95,10 @@ namespace DarkBot_Chastity
                     SaveDatabase();
                 }
             }
+            Log(LogSeverity.Debug, "FreeUser leave lock");
             if (sg == null)
             {
+                Log(LogSeverity.Debug, "FreeUser SocketGuild is null");
                 return;
             }
             if (sgu == null)
@@ -103,11 +108,13 @@ namespace DarkBot_Chastity
             SocketTextChannel stc = sg.GetTextChannel(chastityChannel);
             if (stc == null)
             {
+                Log(LogSeverity.Debug, "FreeUser SocketTextChannel is null");
                 return;
             }
             SocketRole chastity = sg.GetRole(chastityRole);
             if (chastity == null)
             {
+                Log(LogSeverity.Debug, "FreeUser cannot find chastity role");
                 return;
             }
             await sgu.RemoveRoleAsync(chastity);
@@ -152,6 +159,7 @@ namespace DarkBot_Chastity
                     SocketGuildUser sgu = message.Author as SocketGuildUser;
                     if (sgu == null)
                     {
+                        await channel.SendMessageAsync("Admin user not found (this is a bug)");
                         return;
                     }
                     if (sgu.GuildPermissions.BanMembers)
@@ -164,11 +172,17 @@ namespace DarkBot_Chastity
                                 SocketGuildUser freeUser = channel.Guild.GetUser(freeID);
                                 if (freeUser == null)
                                 {
+                                    await channel.SendMessageAsync("User not found");
                                     return;
                                 }
                                 FreeUser(channel.Guild, freeUser);
+                                return;
                             }
                         }
+                    }
+                    else
+                    {
+                        await channel.SendMessageAsync("Only administrators can free users");
                     }
                     break;
                 }
