@@ -26,7 +26,6 @@ namespace DarkBot_Chastity
             _client = service.GetService(typeof(DiscordSocketClient)) as DiscordSocketClient;
             _client.Ready += OnReady;
             _client.MessageReceived += HandleMessage;
-            LoadDatabase();
             return Task.CompletedTask;
         }
 
@@ -86,7 +85,6 @@ namespace DarkBot_Chastity
 
         private async void FreeUser(SocketGuild sg, SocketGuildUser sgu)
         {
-            Log(LogSeverity.Debug, "FreeUser enter lock");
             lock (database)
             {
                 if (database.ContainsKey(sgu.Id))
@@ -95,10 +93,8 @@ namespace DarkBot_Chastity
                     SaveDatabase();
                 }
             }
-            Log(LogSeverity.Debug, "FreeUser leave lock");
             if (sg == null)
             {
-                Log(LogSeverity.Debug, "FreeUser SocketGuild is null");
                 return;
             }
             if (sgu == null)
@@ -348,7 +344,7 @@ namespace DarkBot_Chastity
                         if (ui.isOK)
                         {
                             database.Add(ui.userID, ui);
-                            if (ui.releaseTime > 0 && nextUnlock > ui.releaseTime || nextUnlock == 0)
+                            if (ui.releaseTime > 0 && (nextUnlock > ui.releaseTime || nextUnlock == 0))
                             {
                                 nextUnlock = ui.releaseTime;
                             }
@@ -367,7 +363,7 @@ namespace DarkBot_Chastity
                 foreach (KeyValuePair<ulong, UserInfo> ui in database)
                 {
                     sb.AppendLine($"{ui.Key}={ui.Value.serverID},{ui.Value.releaseTime}");
-                    if (ui.Value.releaseTime > 0 && nextUnlock > ui.Value.releaseTime || nextUnlock == 0)
+                    if (ui.Value.releaseTime > 0 && (nextUnlock > ui.Value.releaseTime || nextUnlock == 0))
                     {
                         nextUnlock = ui.Value.releaseTime;
                     }
